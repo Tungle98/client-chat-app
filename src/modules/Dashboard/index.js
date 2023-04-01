@@ -1,31 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Avatar from "../../assets/avatar-new.svg";
 import Input from "../../components/Input";
 
 export default function Dashboard() {
   const contacts = [
     {
-      name: "John",
+      name: "Minh",
       status: "Available",
       img: Avatar,
     },
     {
-      name: "Mary",
+      name: "Trang",
       status: "Available",
       img: Avatar,
     },
     {
-      name: "Alex",
+      name: "Dung",
       status: "Available",
       img: Avatar,
     },
     {
-      name: "JohnMard",
+      name: "Duy",
       status: "Available",
       img: Avatar,
     },
     {
-      name: "MaryQuy",
+      name: "Duc",
       status: "Available",
       img: Avatar,
     },
@@ -35,10 +35,31 @@ export default function Dashboard() {
       img: Avatar,
     },
   ];
+  useEffect(() => {
+    const loggedInUser = JSON.parse(localStorage.getItem("user:detail"));
+    const fetchConversations = async () => {
+      const res = await fetch(
+        `http://localhost:8000/api/conversation/${loggedInUser?.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const resData = await res.json();
+      setConversations(resData);
+    };
+    fetchConversations();
+  }, []);
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user:detail"))
+  );
+  const [conversations, setConversations] = useState([]);
   return (
     <div className="w-screen flex">
       <div className="w-[25%] border h-screen bg-secondary">
-        <div className="flex  items-center mx-14 py-8">
+        <div className="flex  items-center mx-14 py-4">
           <img
             src={Avatar}
             width={75}
@@ -46,7 +67,7 @@ export default function Dashboard() {
             className="border p-[2px] rounded-full"
           />
           <div className="ml-8">
-            <h3 className="text-2xl">Tutorials Dev</h3>
+            <h3 className="text-2xl">{user?.fullName}</h3>
             <p className="text-lg font-light">My Account</p>
           </div>
         </div>
@@ -54,28 +75,37 @@ export default function Dashboard() {
         <div className="mx-14 mt-10">
           <div className="text-primary text-lg">Messages</div>
           <div className="">
-            {contacts.map(({ name, status, img }) => {
+            {
+            conversations.length > 0 ?
+            conversations.map(({ user, conversationId }) => {
               return (
-                <div className="flex items-center py-8 border-b border-b-gray-300">
-                  <div className="cursor-pointer flex items-center"></div>
-                  <img
-                    src={img}
-                    width={60}
-                    height={60}
-                    className="rounded-full"
-                  />
-                  <div className="ml-4">
-                    <h3 className="text-lg font-semibold">{name}</h3>
-                    <p className="text-sm font-light text-gray-600">{status}</p>
+                <div className="flex items-center py-4 border-b border-b-gray-300">
+                  <div className="cursor-pointer flex items-center" onClick={() => console.log('hdhdhd')}>
+                    <div>
+                      <img
+                        src={Avatar}
+                        width={60}
+                        height={60}
+                        className="rounded-full"
+                      />
+                    </div>
+                    <div className="ml-6">
+                      <h3 className="text-lg font-semibold">
+                        {user?.fullName}
+                      </h3>
+                      <p className="text-sm font-light text-gray-600">
+                        {user?.email}
+                      </p>
+                    </div>
                   </div>
                 </div>
               );
-            })}
+            }) : <div className="text-center text-lg font-semibold mt-24">No conversations</div>}
           </div>
         </div>
       </div>
-      <div className="w-[55%] h-screen bg-white flex flex-col items-center ">
-        <div className="w-[75%] bg-secondary h-[80px]  rounded-full flex items-center px-14 mt-8">
+      <div className="w-[50%] h-screen bg-white flex flex-col items-center ">
+        <div className="w-[75%] bg-secondary h-[80px]  rounded-full flex items-center px-14 my-10 shadow-md">
           <div className="cursor-pointer">
             <img
               src={Avatar}
@@ -85,7 +115,7 @@ export default function Dashboard() {
             />
           </div>
           <div className="ml-6 mr-auto">
-            <h3 className="text-lg font-semibold">Alexander</h3>
+            <h3 className="text-lg font-semibold">Quyt</h3>
             <p className="text-sm font-light text-gray-600">online</p>
           </div>
           <div className="cursor-pointer">
@@ -108,7 +138,7 @@ export default function Dashboard() {
             </svg>
           </div>
         </div>
-        <div className="h-[75%]  w-full overflow-y-scroll border-b">
+        <div className="h-[75%]  w-full overflow-y-scroll border-b shadow-sm">
           <div className="p-14">
             <div className="max-w-[40%] bg-secondary rounded-b-xl rounded-tr-xl p-4 mb-6">
               Lorem Ipsum is simply dummy text of the printing and typesetting
@@ -148,11 +178,52 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        <div className="p-14">
-          <Input placeholder="Type a message...." className="w-full" />
+        <div className="p-14 w-full flex items-center">
+          <Input
+            placeholder="Type a message...."
+            className="w-[75%]"
+            inputClassName="p-2 border-0 shadow-md rounded-full bg-secodary"
+          />
+          <div className="ml-2 p-2 cursor-pointer bg-light rounded-full">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon icon-tabler icon-tabler-send"
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M10 14l11 -11"></path>
+              <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5"></path>
+            </svg>
+          </div>
+          <div className="ml-2 p-2 cursor-pointer bg-light rounded-full">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon icon-tabler icon-tabler-circle-plus"
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+              <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+              <path d="M9 12l6 0"></path>
+              <path d="M12 9l0 6"></path>
+            </svg>
+          </div>
         </div>
       </div>
-      <div className="w-[25%] border  h-screen"></div>
+      <div className="w-[25%] border  h-screen bg-light"></div>
     </div>
   );
 }
