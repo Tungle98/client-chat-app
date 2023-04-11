@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Avatar from "../../assets/avatar-new.svg";
 import Input from "../../components/Input";
 import { io } from "socket.io-client";
+import { BsEmojiSmile } from "react-icons/bs";
+import EmojiPicker from "emoji-picker-react";
 
 export default function Dashboard() {
   const [user, setUser] = useState(
@@ -12,6 +14,7 @@ export default function Dashboard() {
   const [message, setMessage] = useState("");
   const [users, setUsers] = useState([]);
   const [socket, setSocket] = useState(null);
+  const messageRef = useRef(null);
 
   useEffect(() => {
     setSocket(io("http://localhost:8080"));
@@ -32,6 +35,10 @@ export default function Dashboard() {
       }));
     });
   }, [socket]);
+
+  useEffect(() => {
+    messageRef?.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages?.messages]);
   useEffect(() => {
     const loggedInUser = JSON.parse(localStorage.getItem("user:detail"));
     const fetchConversations = async () => {
@@ -97,11 +104,11 @@ export default function Dashboard() {
         receiverId: messages?.receiver?.receiverId,
       }),
     });
-    setMessage('')
+    setMessage("");
   };
   return (
     <div className="w-screen flex">
-      <div className="w-[25%] border h-screen bg-secondary">
+      <div className="w-[25%] border h-screen bg-secondary overflow-scroll">
         <div className="flex  items-center mx-14 py-4">
           <img
             src={Avatar}
@@ -121,7 +128,10 @@ export default function Dashboard() {
             {conversations.length > 0 ? (
               conversations.map(({ user, conversationId }) => {
                 return (
-                  <div className="flex items-center py-4 border-b border-b-gray-300">
+                  <div
+                    className="flex items-center py-4 border-b border-b-gray-300"
+                    key={user.id}
+                  >
                     <div
                       className="cursor-pointer flex items-center"
                       onClick={() => fetchMessages(conversationId, user)}
@@ -199,15 +209,19 @@ export default function Dashboard() {
             {messages?.messages?.length > 0 ? (
               messages?.messages.map(({ message, user: { id } = {} }) => {
                 return (
-                  <div
-                    className={`max-w-[40%] rounded-b-xl mb-6 p-4 ${
-                      id === user?.id
-                        ? " bg-primary ml-auto rounded-tl-xl text-white"
-                        : "bg-secondary rounded-tr-xl"
-                    }`}
-                  >
-                    {message}
-                  </div>
+                  <>
+                    <div
+                      key={message.id}
+                      className={`max-w-[40%] rounded-b-xl mb-6 p-4 ${
+                        id === user?.id
+                          ? " bg-primary ml-auto rounded-tl-xl text-white"
+                          : "bg-secondary rounded-tr-xl"
+                      }`}
+                    >
+                      {message}
+                    </div>
+                    <div ref={messageRef}></div>
+                  </>
                 );
               })
             ) : (
@@ -226,6 +240,9 @@ export default function Dashboard() {
               onChange={(e) => setMessage(e.target.value)}
               inputClassName="p-2 border-0 shadow-md rounded-full bg-secodary"
             />
+            <div className="ml-2">{/* <EmojiPicker /> */}
+            <BsEmojiSmile size={24}/>
+            </div>
             <div
               className={`ml-2 p-2 cursor-pointer bg-light rounded-full ${
                 !message && "pointer-events-none"
@@ -256,9 +273,9 @@ export default function Dashboard() {
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="icon icon-tabler icon-tabler-circle-plus"
-                width="30"
-                height="30"
+                class="icon icon-tabler icon-tabler-plus"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
                 stroke-width="2"
                 stroke="currentColor"
@@ -267,21 +284,23 @@ export default function Dashboard() {
                 stroke-linejoin="round"
               >
                 <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
-                <path d="M9 12l6 0"></path>
-                <path d="M12 9l0 6"></path>
+                <path d="M12 5l0 14"></path>
+                <path d="M5 12l14 0"></path>
               </svg>
             </div>
           </div>
         )}
       </div>
-      <div className="w-[25%] border  h-screen bg-light px-8 py-16">
+      <div className="w-[25%] border  h-screen bg-light px-8 py-16 overflow-scroll">
         <div className="text-primary text-lg">Peple</div>
         <div>
           {users.length > 0 ? (
             users.map(({ userId, user }) => {
               return (
-                <div className="flex items-center py-4 border-b border-b-gray-300">
+                <div
+                  className="flex items-center py-4 border-b border-b-gray-300"
+                  key={user.id}
+                >
                   <div
                     className="cursor-pointer flex items-center"
                     onClick={() => fetchMessages("new", user)}

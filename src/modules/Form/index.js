@@ -4,13 +4,17 @@ import Input from "../../components/Input";
 import { json, useNavigate } from "react-router-dom";
 
 export default function Form({ isSignInPage = true }) {
+  const [image, setImage] = useState({ preview: "", data: "" });
   const [data, setData] = useState({
     ...(!isSignInPage && { fullName: "" }),
     email: "",
     password: "",
   });
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
+    let formData = new FormData()
+    formData.append('file', image.data)
+    formData.append('data',data);
     const res = await fetch(
       `http://localhost:8000/api/${isSignInPage ? "login" : "register"}`,
       {
@@ -18,7 +22,7 @@ export default function Form({ isSignInPage = true }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: formData,
       }
     );
     if (res.status === 400) {
@@ -29,9 +33,18 @@ export default function Form({ isSignInPage = true }) {
         localStorage.setItem("user:token", resData.token);
         localStorage.setItem("user:detail", JSON.stringify(resData.user));
         navigate("/");
-      } 
+      }
     }
   };
+
+  const handleFileChange = (e) => {
+    const img = {
+      preview: URL.createObjectURL(e.target.files[0]),
+      data: e.target.files[0],
+    };
+    setImage(img);
+  };
+  // tui ten hiu
   const navigate = useNavigate();
   return (
     <div className="bg-[#e1edff] h-screen flex justify-center items-center">
@@ -70,10 +83,20 @@ export default function Form({ isSignInPage = true }) {
             type="password"
             name="password"
             placeholder="Enter your password"
-            className="mb-14 w-[50%]"
+            className="mb-6 w-[50%]"
             value={data.password}
             onChange={(e) => setData({ ...data, password: e.target.value })}
           />
+
+          {!isSignInPage && (
+            <Input
+              label="Avatar"
+              type="file"
+              name="file"
+              onChange={handleFileChange}
+              className="mb-6 w-[50%]"
+            />
+          )}
           <Button
             label={isSignInPage ? "Sign In" : "Sign Up"}
             className="w-1/2 mb-6"
